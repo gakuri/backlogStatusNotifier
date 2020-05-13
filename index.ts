@@ -1,37 +1,13 @@
-import mailer = require("nodemailer");
+import mail = require("./mailSender");
 
-let smtpConnectionSetting = {
-    host: 'smtp.office365.com',
-    port: 587,
-    secureConnection: false,
-    tls: {
-        ciphers: 'SSLv3'
-    },
-    auth: {
-        user: '******',
-        pass: '******',
-    },
+let mailsender = new mail.MailSender;
 
-};
-
-let mailDetails = {
-    from: '******',
-    to: '******',
-    subject: '******',
-    text: '******'
-};
-
-//server connection
-let smtp = mailer.createTransport(smtpConnectionSetting);
-
-try{
-    smtp.sendMail(mailDetails, function(err, res){
-        if(err){
-            console.log(err);
-        }else{
-            console.log('Message sent: ' + res.message);
-        }
-    });
-}finally{
-    smtp.close();
+let mailDetail:{} = {
+    from:"Enter e-mail address"
+    , to:"Enter e-mail address"
+    , subject:"test"
+    , html:'Embedded image: <img src="cid:hogehoge">'
+    , attachments: [{filename:"obake.png",path: "data:image/png;base64,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", cid:"hogehoge"}]
 }
+
+mailsender.send(mailDetail);
